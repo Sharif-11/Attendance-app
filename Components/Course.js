@@ -1,12 +1,21 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 
-const Course = ({ courseTitle, credit, courseCode }) => {
+const Course = ({
+  courseTitle,
+  credit,
+  courseCode,
+  semesterTitle,
+  batch,
+  session,
+}) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{courseTitle}</Text>
-      <Text style={styles.info}>{courseCode}</Text>
+      <Text style={styles.title}>{courseCode}</Text>
       <Text style={styles.info}>Credit: {credit}</Text>
+      <Text style={styles.info}>Batch: {batch}</Text>
+      <Text style={styles.info}>Sesion: {session}</Text>
     </View>
   );
 };

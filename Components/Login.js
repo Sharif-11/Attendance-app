@@ -13,7 +13,6 @@ import { setAuthHeader } from "../Axios/axiosInstance";
 import { postData } from "../Axios/postData";
 import { setTeacher } from "../Redux/Slicers/teacherSlice";
 import { loginSchema } from "../Yup/login.yup";
-
 const LoginScreen = ({ navigation }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -36,11 +35,11 @@ const LoginScreen = ({ navigation }) => {
       setAuthHeader(token);
       dispatch(setTeacher(teacherData));
       setSubmitting(false);
-      navigation.navigate("Semesters");
+      navigation.navigate("My Courses");
       //navigate("Semesters");
     } else {
       const { message } = result;
-      alert(message);
+      // alert(message);
       setSubmitting(false);
       setError(message);
     }
@@ -48,7 +47,7 @@ const LoginScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Image source={require("../assets/cuet.png")} style={styles.logo} />
+      <Image source={require("../assets/cuet_1.png")} style={styles.logo} />
       <Text style={styles.title}>Login</Text>
       <Formik
         initialValues={initialValues}

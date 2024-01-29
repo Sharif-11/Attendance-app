@@ -1,22 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
+import { fetchData } from "../Axios/fecthData";
 import Course from "./Course"; // Assuming you have a Course component
 
 const Courses = ({ navigation }) => {
-  const [courses, setCourses] = useState([
-    {
-      courseTitle: "Programming",
-      courseCode: "CSE-141",
-      credit: 3,
-    },
-  ]);
+  const [myCourses, setMyCourses] = useState([]);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
-    // Fetch courses data from the backend using the semester information
-    const fetchCourses = async () => {};
-
-    fetchCourses();
+    // setLoading(true);
+    const fetchCourse = async () => {
+      const result = await fetchData("/courses/teacher-courses");
+      if (result.success) {
+        const data = result.data;
+        setMyCourses(data);
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    };
+    fetchCourse();
   }, []);
 
   if (loading) {
@@ -29,12 +31,15 @@ const Courses = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {courses.map((course, idx) => (
+      {myCourses.map(({ semester, course, courseCode }, idx) => (
         <Course
           key={idx}
           courseTitle={course.courseTitle}
           credit={course.credit}
-          courseCode={course.courseCode}
+          courseCode={courseCode}
+          semesterTitle={semester.semesterTitle}
+          batch={semester.batch}
+          session={semester.session}
         />
       ))}
     </View>

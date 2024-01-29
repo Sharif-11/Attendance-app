@@ -8,12 +8,16 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useDispatch } from "react-redux";
+import { setAuthHeader } from "../Axios/axiosInstance";
 import { postData } from "../Axios/postData";
+import { setTeacher } from "../Redux/Slicers/teacherSlice";
 import { loginSchema } from "../Yup/login.yup";
 
 const LoginScreen = ({ navigation }) => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const dispatch = useDispatch();
   const initialValues = {
     teacherId: "CSE-1801",
     password: "123456",
@@ -29,14 +33,14 @@ const LoginScreen = ({ navigation }) => {
     });
     if (result.data) {
       const { token, ...teacherData } = result.data;
-      // console.log(setAuthHeader(token));
-      // dispatch(setTeacher(teacherData));
+      setAuthHeader(token);
+      dispatch(setTeacher(teacherData));
       setSubmitting(false);
       navigation.navigate("Semesters");
       //navigate("Semesters");
     } else {
       const { message } = result;
-      // alert(message);
+      alert(message);
       setSubmitting(false);
       setError(message);
     }

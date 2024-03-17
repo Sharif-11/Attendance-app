@@ -1,4 +1,5 @@
 // App.js
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useEffect, useState } from "react";
 import {
   Button,
@@ -10,29 +11,36 @@ import {
 } from "react-native";
 import { fetchData } from "../Axios/fecthData";
 import { postData } from "../Axios/postData";
-const Attendance = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
+const Attendance = ({ route }) => {
+  const [date, setDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [currentStudentPage, setCurrentStudentPage] = useState([]);
   const [nextStudentPage, setNextStudentPage] = useState([]);
+  const { courseCode, semesterId } = route.params;
   useEffect(() => {
+    setLoading(true);
     const fetchCurrentPage = async () => {
       const result = await fetchData(
-        `/attendances/CSE-141?pageNo=1&&semesterId=20181&&date=2024-03-17T14:57:03.194Z`
+        `/attendances/${courseCode}?pageNo=${currentPage}&&semesterId=${semesterId}&&date=${date.toDateString()}&&pageSize=8`
       );
       //  setStudents(result.data);
       setCurrentStudentPage(result.data.Student_Attendance);
     };
     const fetchNextPage = async () => {
       const result = await fetchData(
-        `/attendances/CSE-141?pageNo=2&&semesterId=20181&&date=2024-03-17T14:57:03.194Z`
+        `/attendances/${courseCode}?pageNo=${
+          currentPage + 1
+        }&&semesterId=20181&&date=${date.toDateString()}`
       );
       setNextStudentPage(result.data.Student_Attendance);
+      setLoading(false);
       // alert(JSON.stringify(result));
     };
     fetchCurrentPage();
     fetchNextPage();
-  }, [currentPage]);
+  }, [currentPage, date]);
   const handleAttendanceChange = (index, present) => {
     const currentState = [...currentStudentPage];
     currentState[index].present = present;
@@ -42,10 +50,13 @@ const Attendance = () => {
     const filteredStudent = currentStudentPage.filter(
       (student) => student.present !== undefined
     );
-    if (filteredStudent.length === 0) return;
+    if (filteredStudent.length === 0) {
+      nextButtonPressed && setCurrentPage((page) => page + 1);
+      return;
+    }
     const attendanceData = {
-      semesterId: "20181",
-      courseCode: "CSE-141",
+      semesterId,
+      courseCode,
       date: new Date(),
       attendances: filteredStudent,
     };
@@ -54,67 +65,92 @@ const Attendance = () => {
       alert(saveAttendance.message);
     } else {
       nextButtonPressed
-        ? setCurrentPage((page) => page - 1)
+        ? setCurrentPage((page) => page + 1)
         : alert("Attendance saved successfully");
     }
   };
+  const changeDate = ({ type }, selectedDate) => {
+    if (type === "set") {
+      setDate(selectedDate);
+      setCurrentPage(1);
+    }
+    setShowPicker(false);
+  };
   return (
     <View style={styles.container}>
-      <ScrollView style={styles.studentList}>
-        {currentStudentPage?.map((student, index) => (
-          <View key={index} style={styles.studentItem}>
-            <Text style={styles.studentName}>{student?.studentId}</Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  student.present === true && styles.presentButton,
-                ]}
-                onPress={() => handleAttendanceChange(index, true)}
-              >
-                <Text style={styles.buttonText}>Present</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  student.present === false && styles.absentButton,
-                ]}
-                onPress={() => handleAttendanceChange(index, false)}
-              >
-                <Text style={styles.buttonText}>Absent</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button]}
-                onPress={() => handleAttendanceChange(index, undefined)}
-              >
-                <Text style={styles.buttonText}>Clear</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-      <View style={styles.buttonWrapper}>
-        <Button
-          title="Previous"
-          disabled={currentPage === 1}
-          onPress={() => setCurrentPage((current) => current - 1)}
+      <Button
+        title={date.toDateString()}
+        onPress={() => setShowPicker((current) => !current)}
+      />
+      {showPicker && (
+        <DateTimePicker
+          mode="date"
+          display="spinner"
+          value={date}
+          onChange={changeDate}
         />
-        {nextStudentPage.length === 0 ? (
+      )}
+      {loading || (
+        <ScrollView style={styles.studentList}>
+          {currentStudentPage?.map((student, index) => (
+            <View key={index} style={styles.studentItem}>
+              <Text style={styles.studentName}>{student?.studentId}</Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    student.present === true && styles.presentButton,
+                  ]}
+                  onPress={() => handleAttendanceChange(index, true)}
+                >
+                  <Text style={styles.buttonText}>Present</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.button,
+                    student.present === false && styles.absentButton,
+                  ]}
+                  onPress={() => handleAttendanceChange(index, false)}
+                >
+                  <Text style={styles.buttonText}>Absent</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button]}
+                  onPress={() => handleAttendanceChange(index, undefined)}
+                >
+                  <Text style={styles.buttonText}>Clear</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
+          {currentStudentPage.length === 0 && <Text>There is no student</Text>}
+        </ScrollView>
+      )}
+      {loading && <Text>Loading...</Text>}
+      {loading || (
+        <View style={styles.buttonWrapper}>
           <Button
-            title="Save"
-            onPress={() => {
-              handleAttendanceData();
-            }}
+            title="Previous"
+            disabled={currentPage === 1}
+            onPress={() => setCurrentPage((current) => current - 1)}
           />
-        ) : (
-          <Button
-            title="Next"
-            onPress={() => {
-              handleAttendanceData(true);
-            }}
-          />
-        )}
-      </View>
+          {nextStudentPage.length === 0 ? (
+            <Button
+              title="Save"
+              onPress={() => {
+                handleAttendanceData();
+              }}
+            />
+          ) : (
+            <Button
+              title="Next"
+              onPress={() => {
+                handleAttendanceData(true);
+              }}
+            />
+          )}
+        </View>
+      )}
     </View>
   );
 };
@@ -135,6 +171,7 @@ const styles = StyleSheet.create({
   },
   studentList: {
     width: "100%",
+    marginTop: 16,
   },
   studentItem: {
     flexDirection: "row",

@@ -15,8 +15,10 @@ const Courses = ({ navigation }) => {
     // setLoading(true);
     const fetchCourse = async () => {
       const result = await fetchData("/courses/teacher-courses");
+
       if (result.success) {
         const data = result.data;
+        // alert(JSON.stringify(data));
         setMyCourses(data);
         setLoading(false);
       } else {
@@ -36,11 +38,16 @@ const Courses = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      {myCourses.map(({ semester, course, courseCode }, idx) => (
+      {myCourses.map(({ semester, course, courseCode, semesterId }, idx) => (
         <TouchableOpacity
           key={idx}
           onPress={() =>
-            navigation.navigate("Attendance", { semester, course, courseCode })
+            navigation.navigate("Attendance", {
+              semester,
+              course,
+              courseCode,
+              semesterId,
+            })
           }
         >
           <Course

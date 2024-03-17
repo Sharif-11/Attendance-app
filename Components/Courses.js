@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { fetchData } from "../Axios/fecthData";
 import Course from "./Course"; // Assuming you have a Course component
 
@@ -32,15 +37,21 @@ const Courses = ({ navigation }) => {
   return (
     <View style={styles.container}>
       {myCourses.map(({ semester, course, courseCode }, idx) => (
-        <Course
+        <TouchableOpacity
           key={idx}
-          courseTitle={course.courseTitle}
-          credit={course.credit}
-          courseCode={courseCode}
-          semesterTitle={semester.semesterTitle}
-          batch={semester.batch}
-          session={semester.session}
-        />
+          onPress={() =>
+            navigation.navigate("Attendance", { semester, course, courseCode })
+          }
+        >
+          <Course
+            courseTitle={course.courseTitle}
+            credit={course.credit}
+            courseCode={courseCode}
+            semesterTitle={semester.semesterTitle}
+            batch={semester.batch}
+            session={semester.session}
+          />
+        </TouchableOpacity>
       ))}
     </View>
   );

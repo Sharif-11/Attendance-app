@@ -19,7 +19,7 @@ const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const initialValues = {
     teacherId: "CSE-1801",
-    password: "123456",
+    password: "123456Ashfaque",
   };
   const handleLogin = async (values) => {
     setSubmitting(true);
